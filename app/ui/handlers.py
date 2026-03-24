@@ -20,6 +20,7 @@ from telegram.ext import (
 
 from app.core import config
 from app.gameplay.game import (
+    _growth_multiplier_from_inventory,
     check_miss_penalty,
     cure_plant,
     do_harvest,
@@ -897,15 +898,19 @@ async def _cb_shop(query, ctx) -> None:
     tg = query.from_user
     async with async_session() as session:
         user = await get_or_create_user(session, tg.id, tg.username)
+        mul = _growth_multiplier_from_inventory(user.inventory)
 
-    photo = img.shop_card(user.coins)
+    base = config.BASE_GROWTH_PER_ACTION
+    boosted = base * mul
+    pct = int((mul - 1) * 100)
+    photo = img.shop_card(user.coins, pct)
     caption = (
         f"🏪 <b>БАЗАР ШЁЛКОВОГО ПУТИ</b>\n\n"
         f"💰 Баланс: {user.coins} монет\n\n"
-        f"✨ <b>Зачем?</b> Каждый товар ускоряет рост куста.\n"
-        f"Бонусы от всех покупок складываются!\n"
-        f"Монеты падают за харвест и мини-игры.\n\n"
-        f"Выбери товар:"
+        f"📈 <b>Твой бонус:</b> +{pct}% к росту\n"
+        f"Базовый рост за действие: {base} → <b>{boosted:.1f}</b> очков\n\n"
+        f"🛒 Покупай товар — бонус суммируется.\n"
+        f"Монеты капают за харвест 🌍 и мини-игры 🎮"
     )
     await _edit_screen(query, photo, caption, shop_inline_kb(config.SHOP_ITEMS, user.coins))
 
@@ -938,13 +943,19 @@ async def _cb_buy(query, ctx, item_key: str) -> None:
         await session.commit()
         coins_left = user.coins
 
-    await query.answer(f"✅ {item['name']} куплено! 💰{coins_left}")
+    mul = _growth_multiplier_from_inventory(user.inventory)
+    pct = int((mul - 1) * 100)
+    base = config.BASE_GROWTH_PER_ACTION
+    boosted = base * mul
+    await query.answer(f"✅ {item['name']} куплено! Бонус: +{pct}%")
     # Обновляем экран магазина
-    photo = img.shop_card(coins_left)
+    photo = img.shop_card(coins_left, pct)
     caption = (
         f"🏪 <b>БАЗАР ШЁЛКОВОГО ПУТИ</b>\n\n"
         f"✅ Куплено: {item['name']}!\n"
-        f"💰 Остаток: {coins_left} монет"
+        f"💰 Остаток: {coins_left} монет\n\n"
+        f"📈 <b>Твой бонус:</b> +{pct}% к росту\n"
+        f"Рост за действие: {base} → <b>{boosted:.1f}</b> очков"
     )
     await _edit_screen(query, photo, caption, shop_inline_kb(config.SHOP_ITEMS, coins_left))
 

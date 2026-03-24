@@ -203,14 +203,15 @@ def status_card(
     )
 
 
-def shop_card(coins: int) -> io.BytesIO | None:
+def shop_card(coins: int, bonus_pct: int = 0) -> io.BytesIO | None:
+    bonus_line = f"Твой бонус: +{bonus_pct}% к росту" if bonus_pct else "Бонус: пока нет покупок"
     return make_card(
         title="БАЗАР ШЁЛКОВОГО ПУТИ",
         body_lines=[
             f"Монеты: {coins}",
+            bonus_line,
             "",
-            "Каждый товар ускоряет рост куста!",
-            "Бонусы складываются.",
+            "Покупай — куст растёт быстрее!",
         ],
         palette="shop",
         footer="Дух одобряет покупки!",

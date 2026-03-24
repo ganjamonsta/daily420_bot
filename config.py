@@ -13,9 +13,9 @@ BOT_USERNAME = "@daily420_bot"
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///growbox.db")
 
 # ─── Game balance ─────────────────────────────────────────────────────
-ENERGY_MAX = 4                # макс действий в день
-ENERGY_COOLDOWN_HOURS = 24    # восстановление энергии
-BASE_GROWTH_PER_ACTION = 10   # базовые очки роста за действие
+ENERGY_MAX = 16                # макс действий в день
+ENERGY_COOLDOWN_HOURS = 4    # восстановление энергии
+BASE_GROWTH_PER_ACTION = 3   # базовые очки роста за действие
 MISS_DAY_PENALTY = 0.5        # множитель замедления при пропуске дня
 FACT_CHANCE = 0.25            # 25% шанс исторического факта при действии
 
@@ -29,8 +29,8 @@ STAGES = {
 }
 
 # Время роста (дни)
-HARVEST_MIN_DAYS = 25
-HARVEST_MAX_DAYS = 30
+HARVEST_MIN_DAYS = 3
+HARVEST_MAX_DAYS = 7
 
 # ─── Random events (вероятности за одно действие) ─────────────────────
 EVENT_CHANCE_BONUS = 0.10     # 10% бонус‑событие

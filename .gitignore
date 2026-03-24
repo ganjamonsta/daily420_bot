@@ -1,0 +1,5 @@
+.env
+growbox.db
+__pycache__/
+*.pyc
+.venv/

@@ -4,17 +4,36 @@ set -euo pipefail
 SERVICE_NAME="daily420-bot"
 APP_DIR="/opt/daily420_bot"
 DEFAULT_BRANCH="main"
+SERVICE_USER="${SERVICE_USER:-}"
+
+resolve_service_user() {
+  if [[ -n "${SERVICE_USER}" ]]; then
+    echo "${SERVICE_USER}"
+    return
+  fi
+
+  local detected=""
+  detected="$(systemctl show -p User --value "${SERVICE_NAME}" 2>/dev/null)" || true
+  if [[ -n "${detected}" ]]; then
+    echo "${detected}"
+    return
+  fi
+
+  echo "daily420"
+}
 
 resolve_branch() {
   check_repo
+  local service_user=""
+  service_user="$(resolve_service_user)"
   local branch=""
-  branch="$(runuser -u daily420 -- bash -lc "cd '${APP_DIR}' && git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||'")" || true
+  branch="$(runuser -u "${service_user}" -- bash -lc "cd '${APP_DIR}' && git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||'")" || true
   if [[ -n "${branch}" ]]; then
     echo "${branch}"
     return
   fi
 
-  branch="$(runuser -u daily420 -- bash -lc "cd '${APP_DIR}' && git rev-parse --abbrev-ref HEAD 2>/dev/null")" || true
+  branch="$(runuser -u "${service_user}" -- bash -lc "cd '${APP_DIR}' && git rev-parse --abbrev-ref HEAD 2>/dev/null")" || true
   if [[ -n "${branch}" ]]; then
     echo "${branch}"
     return
@@ -65,7 +84,9 @@ check_repo() {
 
 run_as_service_user() {
   local cmd="$1"
-  runuser -u daily420 -- bash -lc "cd '${APP_DIR}' && ${cmd}"
+  local service_user=""
+  service_user="$(resolve_service_user)"
+  runuser -u "${service_user}" -- bash -lc "cd '${APP_DIR}' && ${cmd}"
 }
 
 install_deps() {

@@ -3,7 +3,7 @@ set -euo pipefail
 
 APP_DIR="/opt/daily420_bot"
 SERVICE_NAME="daily420-bot"
-SERVICE_USER="daily420"
+SERVICE_USER="${SERVICE_USER:-${SUDO_USER:-daily420}}"
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 if [[ "${EUID}" -ne 0 ]]; then
@@ -51,6 +51,8 @@ runuser -u "${SERVICE_USER}" -- bash -lc "cd '${APP_DIR}' && .venv/bin/python -m
 
 echo "[6/8] Installing systemd service..."
 install -m 0644 "${APP_DIR}/deploy/${SERVICE_NAME}.service" "/etc/systemd/system/${SERVICE_NAME}.service"
+sed -i "s/^User=.*/User=${SERVICE_USER}/" "/etc/systemd/system/${SERVICE_NAME}.service"
+sed -i "s/^Group=.*/Group=${SERVICE_USER}/" "/etc/systemd/system/${SERVICE_NAME}.service"
 systemctl daemon-reload
 systemctl enable "${SERVICE_NAME}"
 
@@ -70,6 +72,7 @@ fi
 
 echo
 echo "[DONE] Deployment bootstrap completed."
+echo "Service user: ${SERVICE_USER}"
 echo "Useful commands:"
 echo "  sudo daily420-bot status"
 echo "  sudo daily420-bot logs 200"

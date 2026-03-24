@@ -58,6 +58,8 @@ cd /opt/daily420_bot
 sudo bash deploy/install_debian12.sh
 ```
 
+Скрипт ставит сервис от пользователя, который вызвал `sudo` (например, `ganja`).
+
 3. Если токен ещё не задан, отредактируй `.env`:
 
 ```bash

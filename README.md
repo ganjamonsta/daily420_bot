@@ -41,6 +41,57 @@ cp .env.example .env
 python bot.py
 ```
 
+### Debian 12 (сервер, systemd + менеджер)
+
+1. Клонируй репо в `/opt/daily420_bot`:
+
+```bash
+sudo mkdir -p /opt
+cd /opt
+sudo git clone <YOUR_REPO_URL> daily420_bot
+cd /opt/daily420_bot
+```
+
+2. Запусти автоустановку:
+
+```bash
+sudo bash deploy/install_debian12.sh
+```
+
+3. Если токен ещё не задан, отредактируй `.env`:
+
+```bash
+sudo nano /opt/daily420_bot/.env
+# BOT_TOKEN=123456:ABC...
+```
+
+4. Перезапусти сервис:
+
+```bash
+sudo systemctl restart daily420-bot
+sudo systemctl status daily420-bot --no-pager
+```
+
+#### Менеджер бота (CLI)
+
+После установки доступна команда:
+
+```bash
+sudo daily420-bot help
+```
+
+Основные команды:
+
+- `sudo daily420-bot status` — статус сервиса
+- `sudo daily420-bot logs 200` — последние 200 строк логов
+- `sudo daily420-bot follow` — live-логи
+- `sudo daily420-bot restart` — рестарт
+- `sudo daily420-bot update` — безопасный апдейт (`git pull --ff-only` + deps + restart)
+- `sudo daily420-bot update-force` — форс-апдейт (reset/clean + deps + restart)
+- `sudo daily420-bot menu` — интерактивное меню
+
+Сервис использует unit-файл: `deploy/daily420-bot.service`.
+
 ---
 
 ## Структура проекта

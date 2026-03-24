@@ -1,0 +1,27 @@
+[Unit]
+Description=Daily420 Telegram Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=daily420
+Group=daily420
+WorkingDirectory=/opt/daily420_bot
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=/opt/daily420_bot/.env
+ExecStart=/opt/daily420_bot/.venv/bin/python /opt/daily420_bot/bot.py
+Restart=always
+RestartSec=5
+TimeoutStopSec=20
+KillSignal=SIGINT
+
+# Basic hardening without breaking sqlite file access in working dir.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/opt/daily420_bot
+
+[Install]
+WantedBy=multi-user.target

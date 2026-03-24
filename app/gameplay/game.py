@@ -148,6 +148,7 @@ async def perform_action(
             f"🤒 Куст болеет ({plant.sickness})!\n"
             f"Сначала нажми «Вылечить», потом действуй."
         )
+        result["sick"] = True
         return result
 
     action = ACTIONS.get(action_key)

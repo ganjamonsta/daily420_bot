@@ -95,14 +95,9 @@ async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
         plant = await get_active_plant(session, user.id)
 
         if plant:
-            status = get_plant_status(plant, user)
-            penalty = check_miss_penalty(plant)
-            text = f"У тебя уже растёт куст!\n\n{status}"
-            if penalty:
-                text = f"{penalty}\n\n{text}"
-            kb = HARVEST_MENU if plant.stage == "harvest" else MAIN_MENU
-            await update.message.reply_text(text, reply_markup=kb)
             await session.commit()
+            # Возвращающийся юзер → сразу inline-хаб с картинкой
+            await cmd_menu_inline(update, ctx)
             return
 
         plant, strain_data = await start_new_grow(session, user)
@@ -138,8 +133,10 @@ async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
         f"⚡ У тебя {config.ENERGY_MAX} действия в день.\n"
         f"Удачи, гровер! Дух Древнего Гроубокса с тобой 🔥",
         parse_mode="Markdown",
-        reply_markup=MAIN_MENU,
     )
+
+    # Сообщение 4: Inline-хаб с кнопками и картинкой
+    await cmd_menu_inline(update, ctx)
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -242,15 +239,14 @@ async def handle_action(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
         result = await perform_action(session, plant, action_key, user)
         await session.commit()
 
-    kb = MAIN_MENU
-    if result.get("harvested"):
-        kb = HARVEST_MENU
-    if result.get("event") and result["event"]["type"] == "problem":
+    if result.get("sick") or (result.get("event") and result["event"]["type"] == "problem"):
         await update.message.reply_text(
             result["message"], reply_markup=cure_keyboard()
         )
         return
-    await update.message.reply_text(result["message"], reply_markup=kb)
+    # Текстовый ответ + inline-хаб с картинкой и кнопками
+    await update.message.reply_text(result["message"])
+    await cmd_menu_inline(update, ctx)
 
 
 # ═══════════════════════════════════════════════════════════════════════

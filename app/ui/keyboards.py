@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 
-import config
+from app.core import config
 
 # ═══════════════════════════════════════════════════════════════════════
 # Reply‑клавиатуры (PM, быстрые кнопки)

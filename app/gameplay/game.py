@@ -12,10 +12,10 @@ from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import config
-from models import HarvestLog, Inventory, Plant, User
-from strains import STAGE_INFO, STRAINS, random_mutation, random_phrase, random_strain
-from lore import (
+from app.core import config
+from app.db.models import HarvestLog, Inventory, Plant, User
+from app.gameplay.strains import STAGE_INFO, STRAINS, random_mutation, random_phrase, random_strain
+from app.gameplay.lore import (
     STAGE_TRANSITION_LORE,
     cultural_phrase,
     random_fact_for_stage,
@@ -266,7 +266,7 @@ async def do_harvest(session: AsyncSession, plant: Plant, user: User) -> dict:
     buds = random.randint(base_min, base_max)
 
     if plant.mutated and plant.mutation_strain:
-        from strains import MUTATIONS
+        from app.gameplay.strains import MUTATIONS
         mut = MUTATIONS.get(plant.mutation_strain)
         if mut:
             buds = int(buds * mut["yield_multiplier"])
@@ -342,7 +342,7 @@ def get_plant_status(plant: Plant, user: User) -> str:
 
     mutation_line = ""
     if plant.mutated and plant.mutation_strain:
-        from strains import MUTATIONS
+        from app.gameplay.strains import MUTATIONS
         mut = MUTATIONS.get(plant.mutation_strain, {})
         mutation_line = f"\n🧬 Мутация: {mut.get('name', '???')}"
 

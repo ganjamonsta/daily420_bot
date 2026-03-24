@@ -18,8 +18,8 @@ from telegram.ext import (
     filters,
 )
 
-import config
-from game import (
+from app.core import config
+from app.gameplay.game import (
     check_miss_penalty,
     cure_plant,
     do_harvest,
@@ -29,7 +29,7 @@ from game import (
     perform_action,
     start_new_grow,
 )
-from keyboards import (
+from app.ui.keyboards import (
     HARVEST_MENU,
     MAIN_MENU,
     START_MENU,
@@ -57,10 +57,10 @@ from keyboards import (
     status_kb,
     top_kb,
 )
-from models import Inventory, async_session
-from strains import STAGE_INFO, STRAINS, random_phrase
-from lore import SPIRIT_INTRO, random_fact, random_fact_for_stage, cultural_phrase
-import images as img
+from app.db.models import Inventory, async_session
+from app.gameplay.strains import STAGE_INFO, STRAINS, random_phrase
+from app.gameplay.lore import SPIRIT_INTRO, random_fact, random_fact_for_stage, cultural_phrase
+from app.gameplay import images as img
 
 # ═══════════════════════════════════════════════════════════════════════
 # Дисклеймеры
@@ -442,7 +442,7 @@ async def handle_new_grow(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> Non
 
 async def handle_leaderboard(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     from sqlalchemy import select, desc
-    from models import HarvestLog, User as UserModel
+    from app.db.models import HarvestLog, User as UserModel
 
     async with async_session() as session:
         week_ago = _dt.datetime.now(_dt.timezone.utc) - _dt.timedelta(days=7)
@@ -728,7 +728,7 @@ async def cmd_menu_inline(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> Non
         stage_info = STAGE_INFO.get(plant.stage, STAGE_INFO["seed"])
         oe = _origin_emoji(strain_data)
         progress = _progress(plant)
-        from game import _maybe_reset_energy
+        from app.gameplay.game import _maybe_reset_energy
         _maybe_reset_energy(plant)
         await session.commit()
 
@@ -767,7 +767,7 @@ async def _cb_hub(query, ctx) -> None:
         stage_info = STAGE_INFO.get(plant.stage, STAGE_INFO["seed"])
         oe = _origin_emoji(strain_data)
         progress = _progress(plant)
-        from game import _maybe_reset_energy
+        from app.gameplay.game import _maybe_reset_energy
         _maybe_reset_energy(plant)
         await session.commit()
 
@@ -943,7 +943,7 @@ async def _cb_buy(query, ctx, item_key: str) -> None:
 
 async def _cb_top(query, ctx) -> None:
     from sqlalchemy import select, desc
-    from models import HarvestLog, User as UserModel
+    from app.db.models import HarvestLog, User as UserModel
 
     async with async_session() as session:
         week_ago = _dt.datetime.now(_dt.timezone.utc) - _dt.timedelta(days=7)

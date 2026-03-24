@@ -47,14 +47,16 @@ python bot.py
 
 | Файл | Описание |
 |---|---|
-| `bot.py` | Точка входа, запуск polling |
-| `config.py` | Конфигурация, баланс, цены, лор‑магазин |
-| `models.py` | SQLAlchemy‑модели (User, Plant, Inventory, HarvestLog) |
-| `lore.py` | **Лор‑модуль**: Дух, культуры, факты, фразы, нарративы |
-| `strains.py` | 12 лор‑стрейнов (по 4 на культуру), мутации, фразы |
-| `game.py` | Игровая логика с интеграцией лора |
-| `handlers.py` | Telegram‑хендлеры с Духом, дисклеймерами, лором |
-| `keyboards.py` | Reply и Inline клавиатуры |
+| `bot.py` | Тонкий launcher (совместим со старым запуском) |
+| `app/main.py` | Основная точка входа и bootstrap приложения |
+| `app/core/config.py` | Конфигурация, баланс, цены, лор‑магазин |
+| `app/db/models.py` | SQLAlchemy‑модели (User, Plant, Inventory, HarvestLog) |
+| `app/gameplay/lore.py` | **Лор‑модуль**: Дух, культуры, факты, фразы, нарративы |
+| `app/gameplay/strains.py` | 12 лор‑стрейнов (по 4 на культуру), мутации, фразы |
+| `app/gameplay/game.py` | Игровая логика с интеграцией лора |
+| `app/gameplay/images.py` | Генерация карточек-изображений для inline-экранов |
+| `app/ui/handlers.py` | Telegram‑хендлеры и роутинг меню |
+| `app/ui/keyboards.py` | Reply и Inline клавиатуры |
 | `BOTFATHER.txt` | Описание для BotFather + примеры диалогов |
 | `start.bat` | Windows‑лаунчер с venv |
 

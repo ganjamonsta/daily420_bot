@@ -28,9 +28,16 @@ def main() -> None:
     app = (
         ApplicationBuilder()
         .token(config.BOT_TOKEN)
+        .connect_timeout(config.TELEGRAM_CONNECT_TIMEOUT)
+        .read_timeout(config.TELEGRAM_READ_TIMEOUT)
+        .write_timeout(config.TELEGRAM_WRITE_TIMEOUT)
+        .pool_timeout(config.TELEGRAM_POOL_TIMEOUT)
         .post_init(post_init)
         .build()
     )
     register_handlers(app)
     logger.info("«Вырасти Куст» @daily420_bot starting…")
-    app.run_polling(drop_pending_updates=True)
+    app.run_polling(
+        drop_pending_updates=True,
+        bootstrap_retries=config.TELEGRAM_BOOTSTRAP_RETRIES,
+    )

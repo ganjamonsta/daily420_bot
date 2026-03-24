@@ -182,7 +182,8 @@ def shop_inline_kb(items: dict, coins: int) -> InlineKeyboardMarkup:
     rows: list[list[InlineKeyboardButton]] = []
     for key, item in items.items():
         can = "✅" if coins >= item["price"] else "🔒"
-        label = f"{can} {item['name']} — {item['price']}💰"
+        bonus = int((item.get("growth_bonus", 1.0) - 1) * 100)
+        label = f"{can} {item['name']} +{bonus}% — {item['price']}💰"
         rows.append([_B(label, callback_data=f"m:buy:{key}")])
     rows.append([_B("🔙 Назад", callback_data="m:hub")])
     return InlineKeyboardMarkup(rows)

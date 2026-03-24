@@ -696,11 +696,21 @@ async def _edit_screen(query, photo, caption, kb):
                 text=caption, parse_mode="HTML", reply_markup=kb,
             )
     except Exception:
-        # Fallback: если не можем отредактировать (переход photo↔text)
+        # Переход photo↔text через edit невозможен — удаляем и шлём заново
         try:
-            await query.edit_message_text(
-                text=caption, parse_mode="HTML", reply_markup=kb,
-            )
+            await query.message.delete()
+        except Exception:
+            pass
+        try:
+            if photo:
+                await query.message.chat.send_photo(
+                    photo=photo, caption=caption,
+                    parse_mode="HTML", reply_markup=kb,
+                )
+            else:
+                await query.message.chat.send_message(
+                    text=caption, parse_mode="HTML", reply_markup=kb,
+                )
         except Exception:
             pass
 
@@ -803,7 +813,8 @@ async def _cb_action(query, ctx, action_key: str) -> None:
         await session.commit()
 
         if not result["ok"]:
-            await _edit_screen(query, None, result["message"], back_kb())
+            photo = img.make_card("ВЫРАСТИ КУСТ", ["Действие невозможно"], palette="world")
+            await _edit_screen(query, photo, result["message"], back_kb())
             return
 
         strain_data = STRAINS.get(plant.strain_key, {})
@@ -890,7 +901,10 @@ async def _cb_shop(query, ctx) -> None:
     photo = img.shop_card(user.coins)
     caption = (
         f"🏪 <b>БАЗАР ШЁЛКОВОГО ПУТИ</b>\n\n"
-        f"💰 Баланс: {user.coins} монет\n"
+        f"💰 Баланс: {user.coins} монет\n\n"
+        f"✨ <b>Зачем?</b> Каждый товар ускоряет рост куста.\n"
+        f"Бонусы от всех покупок складываются!\n"
+        f"Монеты падают за харвест и мини-игры.\n\n"
         f"Выбери товар:"
     )
     await _edit_screen(query, photo, caption, shop_inline_kb(config.SHOP_ITEMS, user.coins))
@@ -1082,7 +1096,12 @@ async def _cb_harvest(query, ctx) -> None:
         f"Дух готов благословить сбор!\n\n"
         f"{DISCLAIMER_HARVEST}"
     )
-    await _edit_screen(query, None, caption, harvest_confirm_kb())
+    photo = img.make_card(
+        "МИРОВОЙ ХАРВЕСТ",
+        [f"Стрейн: {strain_name}", "Готов собрать урожай?"],
+        palette="world", progress=1.0,
+    )
+    await _edit_screen(query, photo, caption, harvest_confirm_kb())
 
 
 async def _cb_harvest_confirm(query, ctx) -> None:
@@ -1102,7 +1121,7 @@ async def _cb_harvest_confirm(query, ctx) -> None:
             buds=result["buds"], coins=result["coins"],
         )
     else:
-        photo = None
+        photo = img.make_card("ХАРВЕСТ", ["Не удалось собрать"], palette="world")
     await _edit_screen(query, photo, result["message"][:1024], after_harvest_kb())
 
 
@@ -1127,14 +1146,19 @@ async def _cb_share(query, ctx) -> None:
         f"Путь: 🏔️→🕌→🇺🇸→🌍 | Попробуй! 🔥"
     )
     caption = f"📤 <b>Похвастайся кустом!</b>\n\n{share_text}"
-    await _edit_screen(query, None, caption, share_inline_kb(share_text))
+    photo = img.make_card(
+        "ПОДЕЛИТЬСЯ", [f"Стрейн: {strain_name}", f"Стадия: {stage_info['title']}"],
+        palette=img.STAGE_TO_PALETTE.get(plant.stage, "world"),
+    )
+    await _edit_screen(query, photo, caption, share_inline_kb(share_text))
 
 
 # ─── Callback: CUSTOMIZE ─────────────────────────────────────────────
 
 async def _cb_customize(query, ctx) -> None:
     caption = "🎨 <b>Кастомизация</b>\n\n✏️ Переименуй куст\n🪴 Смени цвет горшка"
-    await _edit_screen(query, None, caption, customize_kb())
+    photo = img.make_card("КАСТОМИЗАЦИЯ", ["Переименуй куст", "или смени горшок"], palette="world")
+    await _edit_screen(query, photo, caption, customize_kb())
 
 
 async def _cb_pot(query, ctx, color: str) -> None:
@@ -1147,14 +1171,16 @@ async def _cb_pot(query, ctx, color: str) -> None:
             await session.commit()
     await query.answer(f"Горшок: {color}")
     caption = f"🎨 <b>Кастомизация</b>\n\n✅ Горшок изменён на {color}!"
-    await _edit_screen(query, None, caption, customize_kb())
+    photo = img.make_card("КАСТОМИЗАЦИЯ", [f"Горшок: {color}"], palette="world")
+    await _edit_screen(query, photo, caption, customize_kb())
 
 
 async def _cb_rename_inline(query, ctx) -> None:
     await query.answer()
     # Не можем принять текст внутри inline-меню, просим в чат
+    photo = img.make_card("ПЕРЕИМЕНОВАНИЕ", ["Отправь имя в чат (до 30 символов)"], palette="world")
     await _edit_screen(
-        query, None,
+        query, photo,
         "✏️ Отправь новое имя для куста (до 30 символов) текстом в чат.\n"
         "Потом нажми /menu чтобы вернуться.",
         back_kb(),
